@@ -41,7 +41,9 @@ shinyUI(fluidPage(
 
         # Show the statistics of the selected data
         mainPanel(
-            #output
+            textOutput("selected_opleiding"),
+            textOutput("selected_jaar"),
+            tableOutput("test")
         )
     )
 ))
