@@ -36,14 +36,17 @@ shinyUI(fluidPage(
                                "Jaar 4" = 4
                                ),
                                selected = c(1,2,3,4)
-            )
+            ),
+            br(),
+            br(),
+            a("Source code @ GitHub", href="https://github.com/bas-dehaan/digitoets")
         ),
+
 
         # Show the statistics of the selected data
         mainPanel(
-            textOutput("selected_opleiding"),
-            textOutput("selected_jaar"),
-            tableOutput("test")
+            textOutput("responses"),
+            plotOutput("ervaring")
         )
     )
 ))

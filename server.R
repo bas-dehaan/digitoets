@@ -6,6 +6,7 @@
 
 library(shiny)
 library(readxl)
+library(ggplot2)
 
 # Read the exceldata and omit column 1:5 (metadata)
 rawdata = read_xlsx('./rawdata.xlsx')[6:31]
@@ -27,14 +28,28 @@ rawdata[2][rawdata[2] == "Leerjaar 4"] = 4
 
 # Define server logic
 shinyServer(function(input, output) {
-    output$selected_opleiding = renderText({
-        paste("opleiding", input$opleiding)
+    output$responses = renderText({
+        # Select data according to the input$opleiding and input$jaar selection
+        dataselect = subset(rawdata, `Welke opleiding volg je?` %in% input$opleiding & `In welk leerjaar zit je momenteel?` %in% input$jaar)
+        # Count the number of responses
+        total_responses = nrow(rawdata)
+        num_responses = nrow(dataselect)
+        paste(num_responses, "van de", total_responses, "reacties geselecteerd")
     })
-    output$selected_jaar = renderText({
-        paste0(input$jaar, "e jaar")
-    })
-    output$test = renderTable(rownames = TRUE, {
-        subset(rawdata, `Welke opleiding volg je?` %in% input$opleiding & `In welk leerjaar zit je momenteel?` %in% input$jaar)
+    
+    output$ervaring = renderPlot({
+        # Select data according to the input$opleiding and input$jaar selection
+        dataselect = subset(rawdata, `Welke opleiding volg je?` %in% input$opleiding & `In welk leerjaar zit je momenteel?` %in% input$jaar)
+        # Count the number of responses
+        num_responses = nrow(dataselect)
+
+        # Calculate and print the % of experience with digitoetses
+        exp_w_digitoets = round((nrow(dataselect[dataselect[3] == "Ja", ])/num_responses)*100, 1)
+        exp_df = data.frame(
+            group=c("Ervaring", "Geen ervaring"), 
+            value=c(exp_w_digitoets, 100-exp_w_digitoets)
+        )
+        pie(exp_df$value, labels = paste0(exp_df$group, " - ", exp_df$value, "%"), main = "Ervaring met digitaal toetsen")
     })
     
 })
