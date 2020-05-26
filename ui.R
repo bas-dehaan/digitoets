@@ -6,11 +6,12 @@
 
 library(shiny)
 
+
 # Define UI for application
 shinyUI(fluidPage(
 
     # Application title
-    titlePanel("Uitslag enquête digitaal tentamen"),
+    titlePanel("Uitslag enquête"),
 
     # Sidebar with the input for the data selection
     sidebarLayout(
@@ -25,7 +26,7 @@ shinyUI(fluidPage(
                                "BIN"    = 5,
                                "DSLS"   = 6
                                ),
-                               selected = c(1,2,3,4,5,6)
+                selected = c(1,2,3,4,5,6)
             ),
             # Select course year
             checkboxGroupInput("jaar", 
@@ -35,7 +36,7 @@ shinyUI(fluidPage(
                                "Jaar 3" = 3,
                                "Jaar 4" = 4
                                ),
-                               selected = c(1,2,3,4)
+                selected = c(1,2,3,4)
             ),
             br(),
             br(),
@@ -46,7 +47,8 @@ shinyUI(fluidPage(
         # Show the statistics of the selected data
         mainPanel(
             textOutput("responses"),
-            plotOutput("ervaring")
+            plotOutput("ervaring"),
+            plotOutput("beoordeling")
         )
     )
 ))
