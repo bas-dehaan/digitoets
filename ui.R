@@ -40,7 +40,7 @@ shinyUI(fluidPage(
             ),
             br(),
             br(),
-            a("Source code @ GitHub", href="https://github.com/bas-dehaan/digitoets")
+            a("Source code @ GitHub", href="https://github.com/bas-dehaan/digitoets/tree/corona")
         ),
 
 
@@ -48,7 +48,14 @@ shinyUI(fluidPage(
         mainPanel(
             textOutput("responses"),
             plotOutput("ervaring"),
-            plotOutput("beoordeling")
+            plotOutput("beoordeling"),
+            plotOutput("voorbereiding"),
+            plotOutput("tentamen1"),
+            plotOutput("tentamen2"),
+            plotOutput("tentamen3"),
+            plotOutput("tentamen4"),
+            plotOutput("tentamen5"),
+            plotOutput("nabespreking")
         )
     )
 ))

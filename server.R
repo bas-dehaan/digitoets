@@ -11,8 +11,13 @@ library(RColorBrewer)
 library(gridExtra)
 
 # Read the exceldata and omit column 1:5 (metadata)
-rawdata = read.xlsx('./rawdata.xlsx')[6:31]
-names = c("opleiding", "jaar", "ervaring", paste0("Q",4:26))
+#rawdata = read.xlsx('./raw_test_1.xlsx')[6:31]
+#names = c("opleiding", "jaar", "ervaring", paste0("Q",4:26))
+#names(rawdata) = names
+
+# Read the exceldata and omit column 1:6 (metadata)
+rawdata = read.xlsx('./raw_test_2.xlsx')[-(1:6)]
+names = c("opleiding", "jaar", "ervaring", paste0("Q",4:24))
 names(rawdata) = names
 
 
@@ -80,17 +85,18 @@ shinyServer(function(input, output) {
         dataselect = subset(rawdata,
                             subset = `opleiding` %in% input$opleiding & `jaar` %in% input$jaar & `ervaring` == TRUE)
         
-        ## This opperation could most likely be done using a for() loop, but IDK
+        ## This whole opperation could most likely be done using a for() loop, but IDK
+        
+        # Setting-up the universal colorscale
+        # Select 10 colors
+        colors_10 = brewer.pal(n = 10, name = "RdYlGn")
+        # Name them
+        names(colors_10) = 1:10
+        # make a fill color scale and push it to the Global Environment using <<- (only relevant to Shiny)
+        col_scale_10 <<- scale_fill_manual(name = "Var1", values = colors_10)   
         
         # Processing of digi-exams
-        df1 = data.frame(Var1 = 1:10)
-        df2 = as.data.frame(table(dataselect[4]))
-        
-        # Merge the df's
-        df_digi = merge(df1, df2, by = "Var1", all.x = TRUE)
-        df_digi[is.na(df_digi)] = 0
-        df_digi$Var1 = as.factor(df_digi$Var1)
-        
+        df_digi = as.data.frame(table(dataselect[4]))
         # Compute percentages
         df_digi$fraction = df_digi$Freq / sum(df_digi$Freq)
         # Compute the cumulative percentages (top of each rectangle)
@@ -103,31 +109,27 @@ shinyServer(function(input, output) {
         df_digi$label = paste0("Score: ", df_digi$Var1, "\n", round(df_digi$fraction*100, 2), "%")
         
         # Make the plot
-        p = ggplot(df_digi, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Var1)) +
+        p1 = ggplot(df_digi, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Var1)) +
             geom_rect() +
             geom_label( x=3.5, aes(y=labelPosition, label=label), size=2) +
-            scale_fill_brewer(palette="RdYlGn") +
             coord_polar(theta="y") +
             xlim(c(2, 4)) +
             theme_void() +
             theme(legend.position = "none")
         
-        digiplot = grid.arrange(p,
-                                top=textGrob("Digitaal", vjust=3.5, gp = gpar(cex = 2)),
-                                bottom=textGrob(paste("Gemiddelde:", round(colMeans(dataselect[4]), 2)),
-                                                vjust = -5
-                                )
+        # Yes, R is weird so this has to go seperate to work
+        p1 = p1 + col_scale_10
+        
+        # Add a title and interactive caption
+        p1 = grid.arrange(p1,
+                          top=textGrob("Digitaal", vjust=3.5, gp = gpar(cex = 2)),
+                          bottom=textGrob(paste("Gemiddelde:", round(colMeans(dataselect[4]), 2)), vjust = -5)
         )
         
         
-        # Operation of paper-exams
-        df1 = data.frame(Var1 = 1:10)
-        df2 = as.data.frame(table(dataselect[5]))
         
-        # Merge the df's
-        df_paper = merge(df1, df2, by = "Var1", all.x = TRUE)
-        df_paper[is.na(df_paper)] = 0
-        df_paper$Var1 = as.factor(df_paper$Var1)
+        # Processing of paper-exams
+        df_paper = as.data.frame(table(dataselect[5]))
         # Compute percentages
         df_paper$fraction = df_paper$Freq / sum(df_paper$Freq)
         # Compute the cumulative percentages (top of each rectangle)
@@ -139,26 +141,191 @@ shinyServer(function(input, output) {
         # Compute a good label
         df_paper$label = paste0("Score: ", df_paper$Var1, "\n", round(df_paper$fraction*100, 2), "%")
         
-        
-        
         # Make the plot
-        p = ggplot(df_paper, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Var1)) +
+        p2 = ggplot(df_paper, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Var1)) +
             geom_rect() +
             geom_label(x=3.5, aes(y=labelPosition, label=label), size=2) +
-            scale_fill_brewer(palette="RdYlGn") +
             coord_polar(theta="y") +
             xlim(c(2, 4)) +
             theme_void() +
             theme(legend.position = "none")
         
-        paperplot = grid.arrange(p,
-                                 top=textGrob("Papier", vjust=3.5, gp = gpar(cex = 2)),
-                                 bottom=textGrob(paste("Gemiddelde:", round(colMeans(dataselect[5]), 2)),
-                                                 vjust = -5
-                                 )
+        p2 = p2 + col_scale_10
+        
+        # Add a title and interactive caption
+        p2 = grid.arrange(p2,
+                          top=textGrob("Papier", vjust=3.5, gp = gpar(cex = 2)),
+                          bottom=textGrob(paste("Gemiddelde:", round(colMeans(dataselect[5]), 2)), vjust = -5)
         )
         
-        grid.arrange(digiplot, paperplot ,nrow=1, ncol=2)
+        
+        
+        # Show both grahps next to eachother
+        grid.arrange(p1, p2 ,ncol=2)
+    })
+    output$voorbereiding = renderPlot({
+        dataselect = subset(rawdata,
+                            subset = `opleiding` %in% input$opleiding & `jaar` %in% input$jaar & `ervaring` == TRUE)
+
+        # Make a sorting order and push it to the Global Environment using <<- (only relevant to Shiny)
+        sorting_order <<- c("Helemaal oneens", "Deels oneens", "Neutraal", "Deels eens", "Helemaal eens")
+        # Select 5 colors
+        colors_5 = brewer.pal(n = 5, name = "RdYlGn")
+        # Name them
+        names(colors_5) = sorting_order
+        # Make a fill color scale and push it to the Global Environment using <<- (only relevant to Shiny)
+        col_scale_5 <<- scale_fill_manual(name = "Var1", values = colors_5)
+        
+        # Sort everything based on the Sortorder
+        dataselect$Q8 = factor(dataselect$Q8, order = TRUE, levels = sorting_order)
+        # Make the plot
+        p1 = ggplot(dataselect, aes(x=Q8, fill=Q8) ) +
+            ggtitle("Ik kan me op een thuistentamen net zo goed voorbereiden als een normaal tentamen") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p1 = p1 + col_scale_5
+        
+        dataselect$Q9 = factor(dataselect$Q9, order = TRUE, levels = sorting_order)
+        p2 = ggplot(dataselect, aes(x=Q9, fill=Q9) ) +
+            ggtitle("Ik weet wat ik kan verwachten van een thuis tentamen") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p2 = p2 + col_scale_5
+        
+        grid.arrange(p1, p2, ncol=1)
+    })
+    output$tentamen1 = renderPlot({
+        dataselect = subset(rawdata,
+                            subset = `opleiding` %in% input$opleiding & `jaar` %in% input$jaar & `ervaring` == TRUE)
+        
+        dataselect$Q11 = factor(dataselect$Q11, order = TRUE, levels = sorting_order)
+        p1 = ggplot(dataselect, aes(x=Q11, fill=Q11) ) +
+            ggtitle("De begeleiding van de surveillanten tijdens het thuis tentamen is goed") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p1 = p1 + col_scale_5
+        
+        dataselect$Q12 = factor(dataselect$Q12, order = TRUE, levels = sorting_order)
+        p2 = ggplot(dataselect, aes(x=Q12, fill=Q12) ) +
+            ggtitle("De begeleiding vanuit mijn opleiding voor een thuis tentamen is goed") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p2 = p2 + col_scale_5
+        
+        grid.arrange(p1, p2, ncol=1)
+        
+    })
+    output$tentamen2 = renderPlot({
+        dataselect = subset(rawdata,
+                            subset = `opleiding` %in% input$opleiding & `jaar` %in% input$jaar & `ervaring` == TRUE)
+        
+        dataselect$Q13 = factor(dataselect$Q13, order = TRUE, levels = sorting_order)
+        p3 = ggplot(dataselect, aes(x=Q13, fill=Q13) ) +
+            ggtitle("Ik kan me goed concentreren tijdens een thuis tentamen") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p3 = p3 + col_scale_5
+        
+        dataselect$Q14 = factor(dataselect$Q14, order = TRUE, levels = sorting_order)
+        p4 = ggplot(dataselect, aes(x=Q14, fill=Q14) ) +
+            ggtitle("De thuis tentamens zijn goed georganiseerd") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p4 = p4 + col_scale_5
+        
+        grid.arrange(p3, p4, ncol=1)
+        
+    })
+    output$tentamen3 = renderPlot({
+        dataselect = subset(rawdata,
+                            subset = `opleiding` %in% input$opleiding & `jaar` %in% input$jaar & `ervaring` == TRUE)
+        
+        dataselect$Q15 = factor(dataselect$Q15, order = TRUE, levels = sorting_order)
+        p5 = ggplot(dataselect, aes(x=Q15, fill=Q15) ) +
+            ggtitle("Ik kan goed mijn weg vinden (navigeren) in een digitaal tentamen") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p5 = p5 + col_scale_5
+        
+        dataselect$Q16 = factor(dataselect$Q16, order = TRUE, levels = sorting_order)
+        p6 = ggplot(dataselect, aes(x=Q16, fill=Q16) ) +
+            ggtitle("De opstelling voor de livestream was makkelijk te maken") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p6 = p6 + col_scale_5
+        
+        grid.arrange(p5, p6, ncol=1)
+        
+    })
+    output$tentamen4 = renderPlot({
+        dataselect = subset(rawdata,
+                            subset = `opleiding` %in% input$opleiding & `jaar` %in% input$jaar & `ervaring` == TRUE)
+        
+        dataselect$Q17 = factor(dataselect$Q17, order = TRUE, levels = sorting_order)
+        p7 = ggplot(dataselect, aes(x=Q17, fill=Q17) ) +
+            ggtitle("Ik vind het werken met de livestream gemakkelijk") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p7 = p7 + col_scale_5
+        
+        dataselect$Q18 = factor(dataselect$Q18, order = TRUE, levels = sorting_order)
+        p8 = ggplot(dataselect, aes(x=Q18, fill=Q18) ) +
+            ggtitle("Ik vind het prettig dat er een testsessie was") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p8 = p8 + col_scale_5
+        
+        grid.arrange(p7, p8, ncol=1)
+        
+    })
+    output$tentamen5 = renderPlot({
+        dataselect = subset(rawdata,
+                            subset = `opleiding` %in% input$opleiding & `jaar` %in% input$jaar & `ervaring` == TRUE)
+        
+        # Calculate and print the % of problems with digiexams
+        num_responses = nrow(dataselect)
+        problem_w_digitoets = round((nrow(dataselect[dataselect[19] == "Ja", ])/num_responses)*100, 2)
+        problem_df = data.frame(
+            group=c("Ja", "Nee"), 
+            value=c(problem_w_digitoets, 100-problem_w_digitoets)
+        )
+        pie(problem_df$value,
+            labels = paste0(problem_df$group, " - ", problem_df$value, "%"),
+            main = "Heb je problemen gehad tijdens thuistoetsen"
+        )
+        
+    })
+    output$nabespreking = renderPlot({
+        dataselect = subset(rawdata,
+                            subset = `opleiding` %in% input$opleiding & `jaar` %in% input$jaar & `ervaring` == TRUE)
+        
+        dataselect$Q21 = factor(dataselect$Q21, order = TRUE, levels = sorting_order)
+        p1 = ggplot(dataselect, aes(x=Q21, fill=Q21) ) +
+            ggtitle("Ik vind het belangrijk dat ik vanuit huis mijn tentamen kan inzien") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p1 = p1 + col_scale_5
+        
+        dataselect$Q22 = factor(dataselect$Q22, order = TRUE, levels = sorting_order)
+        p2 = ggplot(dataselect, aes(x=Q22, fill=Q22) ) +
+            ggtitle("Ik vind het belangrijk dat digitale tentamens worden nabesproken door de docent") +
+            xlab(NULL) +
+            geom_bar( ) +
+            theme(legend.position="none")
+        p2 = p2 + col_scale_5
+        
+        grid.arrange(p1, p2, ncol=1)
         
     })
     
