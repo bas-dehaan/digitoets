@@ -5,7 +5,12 @@ date: "5/26/2020"
 output: html_document
 ---
 
-```{r}
+```{r setup, message=FALSE, warning=FALSE, echo=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
 #
 # Created by: B.M. de Haan
 # Used to analyse data from a school servey about digital examination
@@ -23,8 +28,12 @@ library(gridExtra)
 
 ```{r}
 # Read the exceldata and omit column 1:5 (metadata)
-rawdata = read.xlsx('./rawdata.xlsx')[6:31]
-names = c("opleiding", "jaar", "ervaring", paste0("Q",4:26))
+#rawdata = read.xlsx('./raw_test_1.xlsx')[-(1:5)]
+#names = c("opleiding", "jaar", "ervaring", paste0("Q",4:26))
+
+# Read the exceldata and omit column 1:6 (metadata)
+rawdata = read.xlsx('./raw_test_2.xlsx')[-(1:6)]
+names = c("opleiding", "jaar", "ervaring", paste0("Q",4:24))
 names(rawdata) = names
 
 # Make the data machine-readable
@@ -87,82 +96,103 @@ dataselect = subset(dataselect, subset = `ervaring` == TRUE)
 
 # Processing of digi-exams
 df1 = data.frame(Var1 = 1:10)
-df2 = as.data.frame(table(dataselect[4]))
-
-# Merge the df's
-df_digi = merge(df1, df2, by = "Var1", all.x = TRUE)
-df_digi[is.na(df_digi)] = 0
-df_digi$Var1 = as.factor(df_digi$Var1)
-
-# Compute percentages
-df_digi$fraction = df_digi$Freq / sum(df_digi$Freq)
-# Compute the cumulative percentages (top of each rectangle)
-df_digi$ymax = cumsum(df_digi$fraction)
-# Compute the bottom of each rectangle
-df_digi$ymin = c(0, head(df_digi$ymax, n=-1))
-# Compute label position
-df_digi$labelPosition = (df_digi$ymax + df_digi$ymin) / 2
-# Compute a good label
-df_digi$label = paste0("Score: ", df_digi$Var1, "\n", round(df_digi$fraction*100, 2), "%")
-
-# Make the plot
-p = ggplot(df_digi, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Var1)) +
-    geom_rect() +
-    geom_label( x=3.5, aes(y=labelPosition, label=label), size=3) +
-    scale_fill_brewer(palette="RdYlGn") +
-    coord_polar(theta="y") +
-    xlim(c(2, 4)) +
-    theme_void() +
-    theme(legend.position = "none")
+        df2 = as.data.frame(table(dataselect[4]))
         
-digiplot = grid.arrange(p,
-                        top=textGrob("Digitaal", vjust=3.5, gp = gpar(cex = 2)),
-                        bottom=textGrob(paste("Gemiddelde:", round(colMeans(dataselect[4]), 2)),
-                                        vjust = -5
-                                        )
+        # Merge the df's
+        df_digi = merge(df1, df2, by = "Var1", all.x = TRUE)
+        df_digi[is.na(df_digi)] = 0
+        df_digi$Var1 = as.factor(df_digi$Var1)
+        
+        # Compute percentages
+        df_digi$fraction = df_digi$Freq / sum(df_digi$Freq)
+        # Compute the cumulative percentages (top of each rectangle)
+        df_digi$ymax = cumsum(df_digi$fraction)
+        # Compute the bottom of each rectangle
+        df_digi$ymin = c(0, head(df_digi$ymax, n=-1))
+        # Compute label position
+        df_digi$labelPosition = (df_digi$ymax + df_digi$ymin) / 2
+        # Compute a good label
+        df_digi$label = paste0("Score: ", df_digi$Var1, "\n", round(df_digi$fraction*100, 2), "%")
+        
+        # Make the plot
+        p1 = ggplot(df_digi, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Var1)) +
+            geom_rect() +
+            geom_label( x=3.5, aes(y=labelPosition, label=label), size=2) +
+            scale_fill_brewer(palette="RdYlGn") +
+            coord_polar(theta="y") +
+            xlim(c(2, 4)) +
+            theme_void() +
+            theme(legend.position = "none")
+        
+
+        digiplot = grid.arrange(p1,
+                                top=textGrob("Digitaal", vjust=3.5, gp = gpar(cex = 2)),
+                                bottom=textGrob(paste("Gemiddelde:", round(colMeans(dataselect[4]), 2)),
+                                                vjust = -5
+                                )
+        )
+        
+        
+        
+        # Operation of paper-exams
+        df1 = data.frame(Var1 = 1:10)
+        df2 = as.data.frame(table(dataselect[5]))
+        
+        # Merge the df's
+        df_paper = merge(df1, df2, by = "Var1", all.x = TRUE)
+        df_paper[is.na(df_paper)] = 0
+        df_paper$Var1 = as.factor(df_paper$Var1)
+        # Compute percentages
+        df_paper$fraction = df_paper$Freq / sum(df_paper$Freq)
+        # Compute the cumulative percentages (top of each rectangle)
+        df_paper$ymax = cumsum(df_paper$fraction)
+        # Compute the bottom of each rectangle
+        df_paper$ymin = c(0, head(df_paper$ymax, n=-1))
+        # Compute label position
+        df_paper$labelPosition = (df_paper$ymax + df_paper$ymin) / 2
+        # Compute a good label
+        df_paper$label = paste0("Score: ", df_paper$Var1, "\n", round(df_paper$fraction*100, 2), "%")
+        
+        
+        
+        # Make the plot
+        p2 = ggplot(df_paper, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Var1)) +
+            geom_rect() +
+            geom_label(x=3.5, aes(y=labelPosition, label=label), size=2) +
+            scale_fill_brewer(palette="RdYlGn") +
+            coord_polar(theta="y") +
+            xlim(c(2, 4)) +
+            theme_void() +
+            theme(legend.position = "none")
+        
+
+            paperplot = grid.arrange(p2,
+                                top=textGrob("Papier", vjust=3.5, gp = gpar(cex = 2)),
+                                bottom=textGrob(paste("Gemiddelde:", round(colMeans(dataselect[4]), 2)),
+                                                vjust = -5
+                                )
                         )
+            
+                
+        grid.arrange(digiplot, paperplot ,ncol=2)
 
-
-# Operation of paper-exams
-df1 = data.frame(Var1 = 1:10)
-df2 = as.data.frame(table(dataselect[5]))
-
-# Merge the df's
-df_paper = merge(df1, df2, by = "Var1", all.x = TRUE)
-df_paper[is.na(df_paper)] = 0
-df_paper$Var1 = as.factor(df_paper$Var1)
-# Compute percentages
-df_paper$fraction = df_paper$Freq / sum(df_paper$Freq)
-# Compute the cumulative percentages (top of each rectangle)
-df_paper$ymax = cumsum(df_paper$fraction)
-# Compute the bottom of each rectangle
-df_paper$ymin = c(0, head(df_paper$ymax, n=-1))
-# Compute label position
-df_paper$labelPosition = (df_paper$ymax + df_paper$ymin) / 2
-# Compute a good label
-df_paper$label = paste0("Score: ", df_paper$Var1, "\n", round(df_paper$fraction*100, 2), "%")
         
         
-        
-# Make the plot
-p = ggplot(df_paper, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Var1)) +
-    geom_rect() +
-    geom_label(x=3.5, aes(y=labelPosition, label=label), size=3) +
+
+```
+
+```{r}
+ggplot(dataselect, aes(x=as.factor(Q8), fill=as.factor(Q8)) ) +
+    geom_bar( ) +
     scale_fill_brewer(palette="RdYlGn") +
-    coord_polar(theta="y") +
-    xlim(c(2, 4)) +
-    theme_void() +
-    theme(legend.position = "none")
+    theme(legend.position="none")
 
-paperplot = grid.arrange(p,
-                         top=textGrob("Papier", vjust=3.5, gp = gpar(cex = 2)),
-                         bottom=textGrob(paste("Gemiddelde:", round(colMeans(dataselect[5]), 2)),
-                                         vjust = -5
-                                         )
-                         )
-
-grid.arrange(digiplot, paperplot ,nrow=1, ncol=2)
+ggplot(dataselect, aes(x=as.factor(Q9), fill=as.factor(Q9)) ) +
+    geom_bar( ) +
+    scale_fill_brewer(palette="RdYlGn") +
+    theme(legend.position="none")
 
 
 ```
+
 
