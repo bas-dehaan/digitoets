@@ -58,9 +58,11 @@ shinyUI(fluidPage(
                                ),
                 selected = 1:4
             ),
+            # To prevent constantly updating the graphs, wait for the user input.
             submitButton("Update selectie", icon("refresh")),
             br(),
             br(),
+            # Just brag about yourself... although you have no reason to be proud about this mess
             a("Source code @ GitHub", href="https://github.com/bas-dehaan/digitoets/tree/corona")
         ),
 

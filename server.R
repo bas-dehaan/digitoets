@@ -11,10 +11,6 @@ library(RColorBrewer)
 library(grid)
 library(gridExtra)
 
-# Read the exceldata and omit column 1:5 (metadata)
-#rawdata = read.xlsx('./raw_test_1.xlsx')[6:31]
-#names = c("opleiding", "jaar", "ervaring", paste0("Q",4:26))
-#names(rawdata) = names
 
 # Read the exceldata and omit column 1:6 (metadata)
 rawdata = read.xlsx('./rawdata.xlsx')[-(1:6)]
@@ -40,7 +36,7 @@ rawdata$jaar[rawdata$jaar == "Leerjaar 4"] = 4
 rawdata$ervaring[rawdata$ervaring == "Ja"]  = TRUE
 rawdata$ervaring[rawdata$ervaring == "Nee"] = FALSE
 
-## Sadly Shinny does not updata functions which are outside of the shinnyServer()
+## Sadly Shinny does not update functions which are outside of the shinnyServer()
 
 # dataload = function(erv = TRUE){
 #     if(!erv){
@@ -162,7 +158,7 @@ shinyServer(function(input, output) {
         
         
         # Show both grahps next to eachother
-        grid.arrange(p1, p2 ,ncol=2)
+        grid.arrange(p1, p2, ncol=2)
     })
     output$voorbereiding = renderPlot({
         dataselect = subset(rawdata,
