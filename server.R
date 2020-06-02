@@ -8,6 +8,7 @@ library(shiny)
 library(openxlsx)
 library(tidyverse)
 library(RColorBrewer)
+library(grid)
 library(gridExtra)
 
 # Read the exceldata and omit column 1:5 (metadata)
@@ -16,7 +17,7 @@ library(gridExtra)
 #names(rawdata) = names
 
 # Read the exceldata and omit column 1:6 (metadata)
-rawdata = read.xlsx('./raw_test_2.xlsx')[-(1:6)]
+rawdata = read.xlsx('./rawdata.xlsx')[-(1:6)]
 names = c("opleiding", "jaar", "ervaring", paste0("Q",4:24))
 names(rawdata) = names
 
@@ -28,7 +29,7 @@ rawdata$opleiding[rawdata$opleiding == "BML-Research"]          = 1
 rawdata$opleiding[rawdata$opleiding == "BML-Diagnostiek"]       = 2
 rawdata$opleiding[rawdata$opleiding == "Chemie"]                = 3
 rawdata$opleiding[rawdata$opleiding == "Chemische Technologie"] = 4
-rawdata$opleiding[rawdata$opleiding == "Bioinformatica"]        = 5
+rawdata$opleiding[rawdata$opleiding == "Bio-informatica"]       = 5
 rawdata$opleiding[rawdata$opleiding == "Master Datascience"]    = 6
 # Study years
 rawdata$jaar[rawdata$jaar == "Leerjaar 1"] = 1

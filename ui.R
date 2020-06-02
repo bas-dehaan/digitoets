@@ -16,6 +16,26 @@ shinyUI(fluidPage(
     # Sidebar with the input for the data selection
     sidebarLayout(
         sidebarPanel(
+            # Data is loading message
+            tags$head(tags$style(type="text/css", "
+                #loading {
+                    position: fixed;
+                    top: 0px;
+                    left: 0px;
+                    width: 100%;
+                    padding: 5px 0px 5px 0px;
+                    text-align: center;
+                    font-weight: bold;
+                    font-size: 100%;
+                    color: #000000;
+                    background-color: #CCFF66;
+                    z-index: 105;
+                }"
+            )),
+            conditionalPanel(condition="$('html').hasClass('shiny-busy')",
+                             tags$div("Data wordt geladen, een ogenblik geduld...",
+                                      id="loading")),
+            
             # Select course program
             checkboxGroupInput("opleiding", 
                 h4("Opleiding"), 
@@ -26,7 +46,7 @@ shinyUI(fluidPage(
                                "BIN"    = 5,
                                "DSLS"   = 6
                                ),
-                selected = c(1,2,3,4,5,6)
+                selected = 1:6
             ),
             # Select course year
             checkboxGroupInput("jaar", 
@@ -36,8 +56,9 @@ shinyUI(fluidPage(
                                "Jaar 3" = 3,
                                "Jaar 4" = 4
                                ),
-                selected = c(1,2,3,4)
+                selected = 1:4
             ),
+            submitButton("Update selectie", icon("refresh")),
             br(),
             br(),
             a("Source code @ GitHub", href="https://github.com/bas-dehaan/digitoets/tree/corona")

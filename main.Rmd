@@ -12,7 +12,7 @@ output: html_document
 # Github: https://github.com/bas-dehaan/digitoets/tree/corona
 #
 
-## The most lazy, and buggy code you've ever seen, completly bodged together. ENJOY (srry michiel ;-) )
+## The most lazy, and buggy code you've ever seen, completly bodged together. ENJOY (srry michiel ;-) 't lag niet aan je lessen)
 
 knitr::opts_chunk$set(
 	echo = FALSE,
@@ -34,7 +34,7 @@ library(gridExtra)
 #names = c("opleiding", "jaar", "ervaring", paste0("Q",4:26))
 
 # Read the exceldata and omit column 1:6 (metadata)
-rawdata = read.xlsx('./raw_test_2.xlsx')[-(1:6)]
+rawdata = read.xlsx('./rawdata.xlsx')[-(1:6)]
 names = c("opleiding", "jaar", "ervaring", paste0("Q",4:24))
 names(rawdata) = names
 
@@ -44,7 +44,7 @@ rawdata$opleiding[rawdata$opleiding == "BML-Research"]          = 1
 rawdata$opleiding[rawdata$opleiding == "BML-Diagnostiek"]       = 2
 rawdata$opleiding[rawdata$opleiding == "Chemie"]                = 3
 rawdata$opleiding[rawdata$opleiding == "Chemische Technologie"] = 4
-rawdata$opleiding[rawdata$opleiding == "Bioinformatica"]        = 5
+rawdata$opleiding[rawdata$opleiding == "Bio-informatica"]        = 5
 rawdata$opleiding[rawdata$opleiding == "Master Datascience"]    = 6
 # Study years
 rawdata$jaar[rawdata$jaar == "Leerjaar 1"] = 1
